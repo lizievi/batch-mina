@@ -1,131 +1,13 @@
-// import Grid from "../components/Grid";
-// import { useParams } from "react-router-dom";
-// import { useState } from "react";
-// import { useBatchStore } from "../store/BatchStore";
-
-// export default function AsignBagPage() {
-//   const { id } = useParams();
-//   const [cantidad, setCantidad] = useState("");
-
-//   // Traemos los lotes desde Zustand
-//   const lotes = useBatchStore((state) => state.lotes);
-
-//   // Buscamos el lote por id
-//   const lote = lotes.find((item) => item.id === id);
-
-//   const handleClear = () => {
-//     setCantidad("");
-//   };
-
-//   const handleSave = () => {
-//     console.log("Guardar asignación");
-//   };
-
-//   const handleCancel = () => {
-//     console.log("Cancelar asignación");
-//   };
-
-//   return (
-//     <div className="max-w-5xl mx-auto p-6 space-y-6">
-//       {/* Encabezado */}
-//       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-//         <h3 className="text-lg font-semibold text-gray-800">
-//           Lote:{" "}
-//           <span className="text-blue-600">
-//             {lote?.loteName || "Lote no encontrado"}
-//           </span>
-//         </h3>
-//         <span className="text-gray-600">
-//           Sacos asignados: {lote ? `${lote.sacks.filter(s => s.estate === "asigned").length}/${lote.sacks.length}` : "0/0"}
-//         </span>
-//       </div>
-
-//       {/* Controles superiores */}
-//       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
-//         <div>
-//           <label className="block mb-1 text-sm font-medium text-gray-700">
-//             Selecciona un Patio
-//           </label>
-//           <select className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none">
-//             <option value="">Elige un patio</option>
-//             <option>Patio 1</option>
-//             <option>Patio 2</option>
-//           </select>
-//         </div>
-
-//         <div>
-//           <label className="block mb-1 text-sm font-medium text-gray-700">
-//             Selecciona una Zona
-//           </label>
-//           <select className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none">
-//             <option value="">Elige una zona</option>
-//             <option>Zona A</option>
-//             <option>Zona B</option>
-//           </select>
-//         </div>
-
-//         {/* Input de cantidad */}
-//         <div>
-//           <label className="block mb-1 text-sm font-medium text-gray-700">
-//             Cantidad para asignar
-//           </label>
-//           <input
-//             type="number"
-//             value={cantidad}
-//             onChange={(e) => setCantidad(e.target.value)}
-//             placeholder="Ej: 5"
-//             className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-//           />
-//         </div>
-
-//         {/* Botones asignar y limpiar */}
-//         <div className="flex gap-2">
-//           <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition">
-//             Asignar
-//           </button>
-//           <button
-//             type="button"
-//             onClick={handleClear}
-//             className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg shadow transition"
-//           >
-//             Limpiar
-//           </button>
-//         </div>
-//       </div>
-
-//       {/* Grilla */}
-//       <div className="mt-6 border rounded-lg p-4 bg-white shadow">
-//         <h4 className="text-sm font-medium text-gray-700 mb-3">
-//           Distribución de sacos
-//         </h4>
-//         <Grid rows={3} columns={7} />
-//       </div>
-
-//       {/* Botones inferiores */}
-//       <div className="flex justify-center gap-6 pt-4">
-//         <button
-//           onClick={handleSave}
-//           className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow transition"
-//         >
-//           Guardar
-//         </button>
-//         <button
-//           onClick={handleCancel}
-//           className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg shadow transition"
-//         >
-//           Cancelar
-//         </button>
-//       </div>
-//     </div>
-//   );
-// }
-
 // src/pages/AsignBagPage.tsx
 import Grid from "../components/Grid";
 import { useParams } from "react-router-dom";
 import { useState } from "react";
 import { useBatchStore } from "../store/BatchStore";
 import { usePatioStore } from "../store/PatioStore";
+// import { cellStore } from "../store/CellStore";
+import { useCellStore } from "../store/CellStore";
+import { useEffect } from "react";
+
 
 export default function AsignBagPage() {
   const { id } = useParams();
@@ -158,6 +40,17 @@ export default function AsignBagPage() {
     console.log("Cancelar asignación");
   };
 
+  const { celdas, generarGrid, setOcupadas, actualizarEstado } = useCellStore();
+
+  useEffect(() => {
+    generarGrid(4, 3);
+
+    setOcupadas([
+      { fila: 1, columna: 1 },
+      { fila: 1, columna: 2 },
+      { fila: 2, columna: 1 },
+    ]);
+  }, [generarGrid, setOcupadas]);
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
       {/* Encabezado */}
@@ -178,7 +71,6 @@ export default function AsignBagPage() {
         </span>
       </div>
 
-      {/* Controles superiores */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
         {/* Select de Patio */}
         <div>
@@ -202,7 +94,6 @@ export default function AsignBagPage() {
           </select>
         </div>
 
-        {/* Select de Zona (depende del patio) */}
         <div>
           <label className="block mb-1 text-sm font-medium text-gray-700">
             Selecciona una Zona
@@ -222,7 +113,6 @@ export default function AsignBagPage() {
           </select>
         </div>
 
-        {/* Input de cantidad */}
         <div>
           <label className="block mb-1 text-sm font-medium text-gray-700">
             Cantidad para asignar
@@ -236,7 +126,6 @@ export default function AsignBagPage() {
           />
         </div>
 
-        {/* Botones asignar y limpiar */}
         <div className="flex gap-2">
           <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition">
             Asignar
@@ -251,12 +140,16 @@ export default function AsignBagPage() {
         </div>
       </div>
 
-      {/* Grilla */}
       <div className="mt-6 border rounded-lg p-4 bg-white shadow">
         <h4 className="text-sm font-medium text-gray-700 mb-3">
           Distribución de sacos
         </h4>
-        <Grid rows={3} columns={7} />
+
+        <Grid
+          columnas={3}
+          celdas={celdas}
+          onCellClick={(id) => actualizarEstado(id, "asignado")}
+        />
       </div>
 
       {/* Botones inferiores */}
@@ -277,4 +170,3 @@ export default function AsignBagPage() {
     </div>
   );
 }
-

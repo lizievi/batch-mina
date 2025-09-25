@@ -2,16 +2,11 @@
 import { create } from "zustand";
 import { v4 as uuid } from "uuid";
 
-// Estado posible de un saco
 export type SackState = "asigned" | "no_asigned";
-
-// 🔹 Tipo de un saco "simple" (en el array sacks)
 interface SackType {
   id: string;
   estate: SackState;
 }
-
-// 🔹 Tipo de un saco "detallado" (sacos)
 interface DetailedSackType {
   id: string;
   code: string;
@@ -19,22 +14,17 @@ interface DetailedSackType {
   mineral: string;
   estate: SackState;
 }
-
-// 🔹 Lote
 interface LoteType {
   id: string;
-  loteName: string; // ej: "1001-1010"
-  available: number; // cantidad de sacos libres para asignar
-  sacos?: DetailedSackType; // ✅ el nuevo objeto adicional (opcional si algunos lotes no lo tienen)
-  sacks: SackType[]; // array de 10 sacos simples
+  loteName: string; 
+  available: number; 
+  sacos?: DetailedSackType; 
+  sacks: SackType[]; 
 }
-
-// 🔹 Estado global
 interface BatchStateType {
   lotes: LoteType[];
 }
 
-// ✅ Store de Zustand
 export const useBatchStore = create<BatchStateType>(() => ({
   lotes: [
     {

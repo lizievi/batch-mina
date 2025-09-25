@@ -77,7 +77,6 @@ export function DataTable<TData extends { id: string }, TValue>({
                   </TableCell>
                 ))}
 
-                {/* ✅ Usamos row.original.id que viene del objeto real */}
                 <TableCell>
                   <button
                     onClick={() => navigate(`/asignar/${row.original.id}`)}

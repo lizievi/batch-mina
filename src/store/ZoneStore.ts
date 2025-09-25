@@ -28,3 +28,5 @@ export const zonasData: Record<string, ZonaType[]> = {
     { id: uuid(), nombre: "Zona C4" },
   ],
 };
+
+
