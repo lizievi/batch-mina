@@ -1,32 +1,27 @@
+
 "use client";
 import type { ColumnDef } from "@tanstack/react-table";
 import { z } from "zod";
 
-
-export const paymentSchema = z.object({
+// ✅ Schema corregido para que coincida con BatchStore
+export const loteSchema = z.object({
   id: z.string(),
-  range: z.string(),
+  loteName: z.string(),   // antes era "range"
   available: z.number(),
 });
 
-export type Payment = z.infer<typeof paymentSchema>;
+// ✅ Tipo inferido desde Zod
+export type Lote = z.infer<typeof loteSchema>;
 
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
-// export type Payment = {
-//   id: string;
-//   amount: number;
-//   status: "pending" | "processing" | "success" | "failed";
-//   email: string;
-// };
-
-export const columns: ColumnDef<Payment>[] = [
+// ✅ Columnas que mostrarás en la tabla
+export const columns: ColumnDef<Lote>[] = [
   {
-    accessorKey: "range",
-    header: "Range",
+    accessorKey: "loteName", // antes "range"
+    header: "Rango de sacos",
   },
   {
     accessorKey: "available",
-    header: "Available",
+    header: "Disponibles",
   },
 ];
+

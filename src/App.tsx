@@ -1,23 +1,25 @@
-import { DataTable } from "./page/data-table";
-import { columns, paymentSchema } from "./app/payments/columns";
-import { rawData } from "./app/payments/rawData";
-import EditPage from "./page/editPage";
+import { BrowserRouter as Router, Link, Routes, Route } from "react-router-dom";
 
-const result = paymentSchema.array().safeParse(rawData);
+import HomePage from "./page/HomePage";
+import AsignBagPage from "./page/AsignBagPage";
 
-function App() {
-  if (!result.success) {
-    return <div>Error en los datos</div>;
-  }
-
+export default function App() {
   return (
-    <>
-      <div className="p-6">
-        <DataTable columns={columns} data={result.data} />
-      </div>
-      <EditPage />
-    </>
+    <Router>
+      <header>
+        <nav style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
+          <Link className="luis" to="/">
+            Home
+          </Link>
+          <Link to="/asignar/4">Asignar</Link>
+        </nav>
+      </header>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/asignar/:id" element={<AsignBagPage />} />
+        <Route path="*" element={<h1>404 - Página no encontrada</h1>} />
+      </Routes>
+      <footer>Footer</footer>
+    </Router>
   );
 }
-
-export default App;

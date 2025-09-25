@@ -6,6 +6,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
+import { useNavigate } from "react-router-dom";
 import type { ColumnDef } from "@tanstack/react-table";
 
 import {
@@ -19,12 +20,14 @@ import {
 
 import { MdEdit } from "react-icons/md";
 
+// import type { Lote } from "../app/payments/columns";
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends { id: string }, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
@@ -33,6 +36,8 @@ export function DataTable<TData, TValue>({
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
+
+  const navigate = useNavigate();
 
   return (
     <div className="overflow-hidden rounded-md border">
@@ -55,26 +60,33 @@ export function DataTable<TData, TValue>({
             </TableRow>
           ))}
         </TableHeader>
+
         <TableBody>
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
-              <>
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    //ico editar
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                  <MdEdit />
-                </TableRow>
-              </>
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && "selected"}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(
+                      cell.column.columnDef.cell,
+                      cell.getContext()
+                    )}
+                  </TableCell>
+                ))}
+
+                {/* ✅ Usamos row.original.id que viene del objeto real */}
+                <TableCell>
+                  <button
+                    onClick={() => navigate(`/asignar/${row.original.id}`)}
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    <MdEdit size={20} />
+                  </button>
+                </TableCell>
+              </TableRow>
             ))
           ) : (
             <TableRow>
