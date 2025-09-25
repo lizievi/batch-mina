@@ -1,4 +1,3 @@
-// utils/cellUtils.ts
 import type { Celda } from "../store/CellStore";
 
 // Genera todas las celdas como "disponible"

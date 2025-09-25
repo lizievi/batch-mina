@@ -1,36 +1,4 @@
-// // CellStore.ts
-// import { v4 as uuid } from "uuid";
 
-// // types
-// export type EstadoCelda = "ocupado" | "disponible" | "asignado";
-
-// export type Celda = {
-//   id: string;
-//   fila: number;
-//   columna: number;
-//   estado: EstadoCelda;
-// };
-
-// // Datos estáticos: grilla 4x3 (12 celdas)
-// export const cellStore: Celda[] = [
-//   { id: uuid(), fila: 1, columna: 1, estado: "ocupado" },
-//   { id: uuid(), fila: 1, columna: 2, estado: "ocupado" },
-//   { id: uuid(), fila: 1, columna: 3, estado: "disponible" },
-
-//   { id: uuid(), fila: 2, columna: 1, estado: "disponible" },
-//   { id: uuid(), fila: 2, columna: 2, estado: "disponible" },
-//   { id: uuid(), fila: 2, columna: 3, estado: "disponible" },
-
-//   { id: uuid(), fila: 3, columna: 1, estado: "disponible" },
-//   { id: uuid(), fila: 3, columna: 2, estado: "disponible" },
-//   { id: uuid(), fila: 3, columna: 3, estado: "disponible" },
-
-//   { id: uuid(), fila: 4, columna: 1, estado: "disponible" },
-//   { id: uuid(), fila: 4, columna: 2, estado: "disponible" },
-//   { id: uuid(), fila: 4, columna: 3, estado: "disponible" },
-// ];
-
-// store/CellStore.ts
 import { create } from "zustand";
 import { generarCeldas, marcarOcupadas } from "../lib/cellUtils";
 
