@@ -1,6 +1,5 @@
 import type { Celda } from "../store/CellStore";
 
-// Genera todas las celdas como "disponible"
 export function generarCeldas(filas: number, columnas: number): Celda[] {
   const celdas: Celda[] = [];
   let idCounter = 1;

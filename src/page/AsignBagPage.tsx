@@ -1,80 +1,153 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { useBatchStore } from "../store/BatchStore";
 import { usePatioStore } from "../store/PatioStore";
 import { useCellStore } from "../store/CellStore";
-
+import { useLoteStore } from "../store/LoteStore"; 
 import Grid from "../components/Grid";
-import HeaderAsignacion from "../components/layout/HeaderAsignacion";
-import PatioSelect from "../components/forms/PatioSelect";
-import ZonaSelect from "../components/forms/ZonaSelect";
-import QuantityInput from "../components/forms/QuantityInput";
+import { marcarOcupadas } from "../lib/cellUtils";
 
 export default function AsignBagPage() {
   const { id } = useParams();
   const [cantidad, setCantidad] = useState("");
-  const [selectedPatio, setSelectedPatio] = useState("");
-  const [selectedZona, setSelectedZona] = useState("");
+  const [selectedPatioId, setSelectedPatioId] = useState("");
+  const [selectedZonaId, setSelectedZonaId] = useState("");
 
-  const lotes = useBatchStore((state) => state.lotes);
-  const lote = lotes.find((item) => item.id === id);
-
+  // Stores
+  const lotes = useLoteStore((state) => state.lotes); 
   const patios = usePatioStore((state) => state.patios);
-  const patioActual = patios.find((p) => p.id === selectedPatio);
+  const { celdas, setZonaCeldas } = useCellStore();
 
-  const { celdas, generarGrid, setOcupadas, actualizarEstado } = useCellStore();
+  // Data actual
+  const lote = useMemo(() => lotes.find((item) => item.id === id), [lotes, id]);
+  const patioActual = useMemo(
+    () => patios.find((p) => p.id === selectedPatioId),
+    [patios, selectedPatioId]
+  );
+  const zonaActual = useMemo(
+    () => patioActual?.zonas.find((z) => z.id === selectedZonaId),
+    [patioActual, selectedZonaId]
+  );
 
+  // Side effects
   useEffect(() => {
-    generarGrid(4, 3);
-    setOcupadas([
-      { fila: 1, columna: 1 },
-      { fila: 1, columna: 2 },
-      { fila: 3, columna: 2 },
-    ]);
-  }, [generarGrid, setOcupadas]);
+    if (zonaActual) {
+      // Paso 1: cargar celdas de la zona
+      setZonaCeldas(zonaActual);
 
+      // Paso 2: marcar ocupadas
+      useCellStore.setState((state) => ({
+        celdas: marcarOcupadas(state.celdas, [
+          { fila: 1, columna: 1 },
+          { fila: 2, columna: 2 },
+        ]),
+      }));
+    }
+  }, [zonaActual, setZonaCeldas]);
+
+  // Handlers
   const handleClear = () => {
     setCantidad("");
-    setSelectedPatio("");
-    setSelectedZona("");
+    setSelectedPatioId("");
+    setSelectedZonaId("");
   };
 
   const handleSave = () => {
     console.log("Guardar asignación", {
-      lote: lote?.loteName,
+      lote: lote?.nombre, 
       patio: patioActual?.nombre,
-      zona: patioActual?.zonas.find((z) => z.id === selectedZona)?.nombre,
+      zona: zonaActual?.nombre,
       cantidad,
     });
   };
 
+  const handleCancel = () => {
+    console.log("Cancelar asignación");
+  };
+
+  console.log(lote)
+
+  // UI
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
-      <HeaderAsignacion
-        loteName={lote?.loteName}
-        totalSacks={lote?.sacks.length || 0}
-        assignedSacks={lote?.sacks.filter((s) => s.estate === "asigned").length || 0}
-      />
+      {/* Encabezado */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <h3 className="text-lg font-semibold text-gray-800">
+          Lote:{" "}
+          <span className="text-blue-600">
+            {lote?.nombre || "Lote no encontrado"}
+          </span>
+        </h3>
+        
+        <span className="text-gray-600">
+          Sacos asignados:{" "}
+          {lote
+            ? `${lote.sacos.filter((s) => s.estado === "asigned").length}/${
+                lote.sacos.length
+              }`
+            : "0/0"}
+        </span>
+      </div>
 
+      {/* Filtros y controles */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
-        <PatioSelect
-          patios={patios}
-          selectedPatio={selectedPatio}
-          onChange={(id) => {
-            setSelectedPatio(id);
-            setSelectedZona("");
-          }}
-        />
+        {/* Selector Patio */}
+        <div>
+          <label className="block mb-1 text-sm font-medium text-gray-700">
+            Selecciona un Patio
+          </label>
+          <select
+            value={selectedPatioId}
+            onChange={(e) => {
+              setSelectedPatioId(e.target.value);
+              setSelectedZonaId(""); // reset zona al cambiar patio
+            }}
+            className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+          >
+            <option value="">Elige un patio</option>
+            {patios.map((patio) => (
+              <option key={patio.id} value={patio.id}>
+                {patio.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
 
-        <ZonaSelect
-          zonas={patioActual?.zonas || []}
-          selectedZona={selectedZona}
-          onChange={setSelectedZona}
-          disabled={!selectedPatio}
-        />
+        {/* Selector Zona */}
+        <div>
+          <label className="block mb-1 text-sm font-medium text-gray-700">
+            Selecciona una Zona
+          </label>
+          <select
+            value={selectedZonaId}
+            onChange={(e) => setSelectedZonaId(e.target.value)}
+            disabled={!selectedPatioId}
+            className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none disabled:bg-gray-100 disabled:text-gray-400"
+          >
+            <option value="">Elige una zona</option>
+            {patioActual?.zonas.map((zona) => (
+              <option key={zona.id} value={zona.id}>
+                {zona.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
 
-        <QuantityInput value={cantidad} onChange={setCantidad} />
+        <div>
+          <label className="block mb-1 text-sm font-medium text-gray-700">
+            Cantidad para asignar
+          </label>
+          <input
+            type="number"
+            value={cantidad}
+            onChange={(e) => setCantidad(e.target.value)}
+            placeholder="Ej: 5"
+            className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+          />
+        </div>
 
+        {/* Botones acciones rápidas */}
         <div className="flex gap-2">
           <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition">
             Asignar
@@ -89,19 +162,20 @@ export default function AsignBagPage() {
         </div>
       </div>
 
+      {/* Grid */}
       <div className="mt-6 border rounded-lg p-4 bg-white shadow">
         <h4 className="text-sm font-medium text-gray-700 mb-3">
           Distribución de sacos
         </h4>
-        {selectedZona && (
+        {zonaActual && (
           <Grid
-            columnas={3}
+            columnas={zonaActual.columnas}
             celdas={celdas}
-            onCellClick={(id) => actualizarEstado(id, "asignado")}
           />
         )}
       </div>
 
+      {/* Footer */}
       <div className="flex justify-center gap-6 pt-4">
         <button
           onClick={handleSave}
@@ -110,6 +184,7 @@ export default function AsignBagPage() {
           Guardar
         </button>
         <button
+          onClick={handleCancel}
           className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg shadow transition"
         >
           Cancelar

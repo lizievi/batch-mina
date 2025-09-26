@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Link, Routes, Route } from "react-router-dom";
 
-import HomePage from "./page/HomePage";
 import AsignBagPage from "./page/AsignBagPage";
+import { DataTable } from "./page/DataTable";
 
 export default function App() {
   return (
@@ -15,7 +15,7 @@ export default function App() {
         </nav>
       </header>
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<DataTable />} />
         <Route path="/asignar/:id" element={<AsignBagPage />} />
         <Route path="*" element={<h1>404 - Página no encontrada</h1>} />
       </Routes>

@@ -1,33 +1,42 @@
-// src/store/ZoneStore.ts
 import { z } from "zod";
 import { v4 as uuid } from "uuid";
-// import type { columns } from "@/app/payments/columns";
+import { generarCeldas } from "../lib/cellUtils"; // usamos el generador de celdas
+import type { Celda } from "./CellStore";
 
 export const zonaSchema = z.object({
   id: z.string(),
   nombre: z.string(),
   filas: z.number(),
   columnas: z.number(),
+  celdas: z.array(z.any()), // añadimos celdas
 });
 
 export type ZonaType = z.infer<typeof zonaSchema>;
 
+/** Helper para crear zonas con sus celdas */
+const crearZona = (nombre: string, filas: number, columnas: number): ZonaType => ({
+  id: uuid(),
+  nombre,
+  filas,
+  columnas,
+  celdas: generarCeldas(filas, columnas) as Celda[],
+});
+
 export const zonasData: Record<string, ZonaType[]> = {
   A: [
-    { id: uuid(), nombre: "Zona A1", filas: 5, columnas: 3 },
-    { id: uuid(), nombre: "Zona A2", filas: 4, columnas: 3 },
-    { id: uuid(), nombre: "Zona A3", filas: 5, columnas: 4 },
+    crearZona("Zona A1", 5, 3),
+    crearZona("Zona A2", 4, 3),
+    crearZona("Zona A3", 5, 4),
   ],
   B: [
-    { id: uuid(), nombre: "Zona B1", filas: 6, columnas: 3 },
-    { id: uuid(), nombre: "Zona B2", filas: 4, columnas: 5 },
+    crearZona("Zona B1", 6, 3),
+    crearZona("Zona B2", 4, 5),
   ],
   C: [
-    { id: uuid(), nombre: "Zona C1", filas: 7, columnas: 4 },
-    { id: uuid(), nombre: "Zona C2", filas: 6, columnas: 3 },
-    { id: uuid(), nombre: "Zona C3", filas: 2, columnas: 3 },
-    { id: uuid(), nombre: "Zona C4", filas: 2, columnas: 5 },
+    crearZona("Zona C1", 7, 4),
+    crearZona("Zona C2", 6, 3),
+    crearZona("Zona C3", 2, 3),
+    crearZona("Zona C4", 2, 5),
   ],
 };
-
 

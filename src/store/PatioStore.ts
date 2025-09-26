@@ -1,10 +1,7 @@
-// src/store/PatioStore.ts
 import { create } from "zustand";
 import { z } from "zod";
 import { v4 as uuid } from "uuid";
-// import { zonaSchema, zonasData, ZonaType } from "./ZoneStore";
 import { zonaSchema, zonasData } from "./ZoneStore";
-
 
 export const patioSchema = z.object({
   id: z.string(),
@@ -27,7 +24,7 @@ export const usePatioStore = create<PatioStateType>(() => ({
       nombre: "Patio A",
       area: 500,
       ubicacion: "Norte",
-      zonas: zonasData.A, 
+      zonas: zonasData.A,
     },
     {
       id: uuid(),
@@ -45,4 +42,3 @@ export const usePatioStore = create<PatioStateType>(() => ({
     },
   ],
 }));
-

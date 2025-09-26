@@ -3,10 +3,10 @@ import type { Celda } from "../store/CellStore";
 interface GridProps {
   columnas: number;
   celdas: Celda[];
-  onCellClick?: (celdaId: string) => void;
+  // onCellClick?: (celdaId: string) => void;
 }
 
-export default function Grid({ columnas, celdas, onCellClick }: GridProps) {
+export default function Grid({ columnas, celdas }: GridProps) {
   return (
     <div
       className="grid gap-2"
@@ -15,7 +15,7 @@ export default function Grid({ columnas, celdas, onCellClick }: GridProps) {
       {celdas.map((celda) => (
         <button
           key={celda.id}
-          onClick={() => onCellClick?.(celda.id)}
+          // onClick={() => onCellClick?.(celda.id)}
           className={`h-16 flex items-center justify-center border rounded ${
             celda.estado === "ocupado"
               ? "bg-red-300"
