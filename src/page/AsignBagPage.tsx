@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { usePatioStore } from "../store/PatioStore";
-import { useCellStore } from "../store/CellStore";
-import { useLoteStore } from "../store/LoteStore"; 
+import { useCellStore, type EstadoCelda } from "../store/CellStore";
+import { useLoteStore } from "../store/LoteStore";
 import Grid from "../components/Grid";
 import { marcarOcupadas } from "../lib/cellUtils";
 
@@ -15,20 +15,42 @@ export default function AsignBagPage() {
   const [selectedZonaId, setSelectedZonaId] = useState("");
 
   // Stores
-  const lotes = useLoteStore((state) => state.lotes); 
-  const patios = usePatioStore((state) => state.patios);
-  const { celdas, setZonaCeldas } = useCellStore();
+  const { lotes } = useLoteStore();
+  const { patios } = usePatioStore();
+  const { celdas, setZonaCeldas, actualizarCeldas } = useCellStore();
 
   // Data actual
   const lote = useMemo(() => lotes.find((item) => item.id === id), [lotes, id]);
+
   const patioActual = useMemo(
     () => patios.find((p) => p.id === selectedPatioId),
     [patios, selectedPatioId]
   );
+
   const zonaActual = useMemo(
     () => patioActual?.zonas.find((z) => z.id === selectedZonaId),
     [patioActual, selectedZonaId]
   );
+
+  // Calculamos celdas disponibles
+  const disponibles = useMemo(
+    () => celdas.filter((c) => c.estado === "disponible").length,
+    [celdas]
+  );
+
+  // Calculamos sacos no asignados del lote
+  const sacosNoAsignados = useMemo(() => {
+    if (!lote) return 0;
+    const { sacos } = lote;
+    const sacosNoAsiganados = sacos.filter(
+      ({ estado }) => estado !== "asigned"
+    );
+    const counSacosNoAsignados = sacosNoAsiganados.length;
+    return counSacosNoAsignados;
+  }, [lote]);
+
+  // Max = menor entre disponibles y sacos no asignados
+  const maxCantidad = Math.min(disponibles, sacosNoAsignados);
 
   // Side effects
   useEffect(() => {
@@ -53,20 +75,84 @@ export default function AsignBagPage() {
     setSelectedZonaId("");
   };
 
-  const handleSave = () => {
-    console.log("Guardar asignación", {
-      lote: lote?.nombre, 
-      patio: patioActual?.nombre,
-      zona: zonaActual?.nombre,
-      cantidad,
-    });
-  };
-
   const handleCancel = () => {
     console.log("Cancelar asignación");
   };
 
-  console.log(lote)
+  console.log(lote);
+  console.log("Zona Actual");
+
+  console.log(zonaActual?.celdas); //"ocupado" | "disponible" | "asignado"
+
+  const handleAssign = () => {
+    if (lote) {
+      const cantidadSacos = Number(cantidad);
+      const sacostotales = lote.sacos;
+      const sacosDisponibles = sacostotales.filter(({ estado }) => {
+        return estado === "no_asigned";
+      });
+
+      const sacosParaAsignar = sacosDisponibles.slice(0, cantidadSacos);
+
+      const nuevasCeldas = celdas.map((celda, index) => {
+        
+        if (celda.estado === "disponible" && sacosParaAsignar.length > 0) {
+          
+          const primerSaco = {...sacosParaAsignar[0]};
+          sacosParaAsignar.shift();
+
+          return {
+            ...celda,
+            saco: primerSaco,
+            estado: "asignado" as EstadoCelda,
+            posicion: index + 1,
+          };
+        }
+        return { ...celda };
+      });
+
+      console.log(nuevasCeldas);
+      actualizarCeldas(nuevasCeldas);
+
+      
+
+      // console.log(sacostotales);
+
+      // useCellStore.setState((state: any) => {
+      //   let count = 0;
+      //   const nuevasCeldas = state.celdas.map((celda: Celda) => {
+      //     if (celda.estado === "disponible" && count < cantidadSacos) {
+      //       count++;
+      //       return { ...celda, estado: "asignado" };
+      //     }
+      //     return celda;
+      //   });
+      //   console.log("celdas asignadas");
+      //   console.log(celdas);
+      //   console.log(lote);
+      //   return { celdas: nuevasCeldas };
+      // });
+    }
+  };
+
+  // const handleSave () => {
+  //   lote
+  //   const cantidadSacos = Number(cantidad);
+
+  //   useCellStore.setState((state: any) => {
+  //     let count = 0;
+  //     const nuevasCeldas = state.celdas.map((celda: Celda) => {
+  //       if (celda.estado === "disponible" && count < cantidadSacos) {
+  //         count++;
+  //         return { ...celda, estado: "ocupado", saco: sacos };
+  //       }
+  //       return celda;
+  //     });
+  //     console.log("celdas asignadas");
+  //     console.log(celdas);
+  //     return { celdas: nuevasCeldas };
+  //   });
+  // };
 
   // UI
   return (
@@ -79,7 +165,7 @@ export default function AsignBagPage() {
             {lote?.nombre || "Lote no encontrado"}
           </span>
         </h3>
-        
+
         <span className="text-gray-600">
           Sacos asignados:{" "}
           {lote
@@ -140,16 +226,35 @@ export default function AsignBagPage() {
           </label>
           <input
             type="number"
+            min={1}
+            max={maxCantidad}
             value={cantidad}
-            onChange={(e) => setCantidad(e.target.value)}
+            disabled={!selectedPatioId || !selectedZonaId}
+            // onChange={(e) => setCantidad(e.target.value)}
+            onChange={(e) => {
+              const val = Number(e.target.value);
+              if (val >= 1 && val <= maxCantidad) {
+                setCantidad(String(val));
+              }
+            }}
             placeholder="Ej: 5"
             className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
           />
+          <p className="text-sm text-gray-600 mt-2">
+            Celdas Disponibles: {disponibles} | Sacos no asignados:{" "}
+            {sacosNoAsignados} |{" "}
+            <span className="text-red-600">
+              Cantidad máx permitido: {maxCantidad}
+            </span>
+          </p>
         </div>
 
         {/* Botones acciones rápidas */}
         <div className="flex gap-2">
-          <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition">
+          <button
+            onClick={handleAssign}
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition"
+          >
             Asignar
           </button>
           <button
@@ -167,18 +272,13 @@ export default function AsignBagPage() {
         <h4 className="text-sm font-medium text-gray-700 mb-3">
           Distribución de sacos
         </h4>
-        {zonaActual && (
-          <Grid
-            columnas={zonaActual.columnas}
-            celdas={celdas}
-          />
-        )}
+        {zonaActual && <Grid columnas={zonaActual.columnas} celdas={celdas} />}
       </div>
 
       {/* Footer */}
       <div className="flex justify-center gap-6 pt-4">
         <button
-          onClick={handleSave}
+          // onClick={handleSave}
           className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow transition"
         >
           Guardar
@@ -193,4 +293,3 @@ export default function AsignBagPage() {
     </div>
   );
 }
-

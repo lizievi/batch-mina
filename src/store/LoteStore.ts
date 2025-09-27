@@ -56,4 +56,3 @@ export const useLoteStore = create<LoteStore>((set) => ({
       ),
     })),
 }));
-

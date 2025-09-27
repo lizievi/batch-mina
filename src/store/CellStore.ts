@@ -1,19 +1,23 @@
 import { create } from "zustand";
 import type { ZonaType } from "./ZoneStore";
+import type { Saco } from "./LoteStore";
 
 export type EstadoCelda = "ocupado" | "disponible" | "asignado";
 
 export interface Celda {
+  saco: Saco;
+  estado:  EstadoCelda;
+  posicion: number;
   id: string;
   fila: number;
   columna: number;
-  estado: EstadoCelda;
 }
 
 interface CellStore {
   celdas: Celda[];
   setZonaCeldas: (zona: ZonaType) => void;
   actualizarEstado: (celdaId: string, nuevoEstado: EstadoCelda) => void;
+  actualizarCeldas: (celdas: Celda[]) => void;
 }
 
 export const useCellStore = create<CellStore>((set) => ({
@@ -31,5 +35,9 @@ export const useCellStore = create<CellStore>((set) => ({
         celda.id === celdaId ? { ...celda, estado: nuevoEstado } : celda
       ),
     }));
+  },
+
+  actualizarCeldas: (celdas) => {
+    set({ celdas: celdas });
   },
 }));
