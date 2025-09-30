@@ -5,8 +5,11 @@ import { useParams } from "react-router-dom";
 import { usePatioStore } from "../store/PatioStore";
 import { useCellStore, type EstadoCelda } from "../store/CellStore";
 import { useLoteStore } from "../store/LoteStore";
+// import { useLoteStore, type Saco } from "../store/LoteStore";
+
 import Grid from "../components/Grid";
 import { marcarOcupadas } from "../lib/cellUtils";
+// import type { Saco } from "../store/LoteStore";
 
 export default function AsignBagPage() {
   const { id } = useParams();
@@ -55,10 +58,10 @@ export default function AsignBagPage() {
   // Side effects
   useEffect(() => {
     if (zonaActual) {
-      // Paso 1: cargar celdas de la zona
+      // cargar celdas de la zona
       setZonaCeldas(zonaActual);
 
-      // Paso 2: marcar ocupadas
+      // marcar ocupadas
       useCellStore.setState((state) => ({
         celdas: marcarOcupadas(state.celdas, [
           { fila: 1, columna: 1 },
@@ -75,84 +78,132 @@ export default function AsignBagPage() {
     setSelectedZonaId("");
   };
 
-  const handleCancel = () => {
-    console.log("Cancelar asignación");
-  };
-
-  console.log(lote);
-  console.log("Zona Actual");
-
-  console.log(zonaActual?.celdas); //"ocupado" | "disponible" | "asignado"
+  //"ocupado" | "disponible" | "asignado"
 
   const handleAssign = () => {
     if (lote) {
       const cantidadSacos = Number(cantidad);
-      const sacostotales = lote.sacos;
-      const sacosDisponibles = sacostotales.filter(({ estado }) => {
+      const { sacos } = lote;
+      const sacosNoAsignados = sacos.filter(({ estado }) => {
         return estado === "no_asigned";
       });
 
-      const sacosParaAsignar = sacosDisponibles.slice(0, cantidadSacos);
-
-      const nuevasCeldas = celdas.map((celda, index) => {
-        
-        if (celda.estado === "disponible" && sacosParaAsignar.length > 0) {
-          
-          const primerSaco = {...sacosParaAsignar[0]};
-          sacosParaAsignar.shift();
-
+      const sacosParaAsignar = sacosNoAsignados.slice(0, cantidadSacos);
+      const celdasDisponibles = celdas.filter(({ estado }) => {
+        return estado === "disponible";
+      });
+      const celdasAsignadas = celdasDisponibles.map((celda, index) => {
+        if (index < cantidadSacos) {
           return {
             ...celda,
-            saco: primerSaco,
-            estado: "asignado" as EstadoCelda,
-            posicion: index + 1,
+            estado: "asignado",
+            saco: { ...sacosParaAsignar[index], estado: "asigned" },
           };
         }
-        return { ...celda };
+        return {
+          ...celda,
+        };
       });
-
-      console.log(nuevasCeldas);
-      actualizarCeldas(nuevasCeldas);
-
-      
-
-      // console.log(sacostotales);
-
-      // useCellStore.setState((state: any) => {
-      //   let count = 0;
-      //   const nuevasCeldas = state.celdas.map((celda: Celda) => {
-      //     if (celda.estado === "disponible" && count < cantidadSacos) {
-      //       count++;
-      //       return { ...celda, estado: "asignado" };
-      //     }
-      //     return celda;
-      //   });
-      //   console.log("celdas asignadas");
-      //   console.log(celdas);
-      //   console.log(lote);
-      //   return { celdas: nuevasCeldas };
-      // });
+      let i = 0;
+      const totalCeldasNuevas = celdas.map((celda) => {
+        const objetoceldasAsignadas = { ...celdasAsignadas[i] };
+        const { estado, saco } = objetoceldasAsignadas;
+        const { id: idArrCelAsignadas } = objetoceldasAsignadas;
+        if (idArrCelAsignadas === celda.id) {
+          i++;
+          return {
+            ...celda,
+            estado: estado as EstadoCelda,
+            saco: saco,
+          };
+        }
+        return {
+          ...celda,
+        };
+      });
+      actualizarCeldas(totalCeldasNuevas);
+      setCantidad("");
     }
   };
 
-  // const handleSave () => {
-  //   lote
-  //   const cantidadSacos = Number(cantidad);
+  const handleCancel = () => {
+    if (lote) {
+      // const { sacos } = lote;
+      
+      // console.log(sacos);
+      const celdasCanceladas = celdas.map((celda) => {
+        if (celda.estado === "asignado") {
+          return {
+            ...celda,
+            estado: "disponible" as EstadoCelda,
+            // saco: { ...sacos[index], estado: "no_asigned" }
+            saco: {},
+          };
+        }
+        return celda;
+      });
+      actualizarCeldas(celdasCanceladas);
+    }
+  };
 
-  //   useCellStore.setState((state: any) => {
-  //     let count = 0;
-  //     const nuevasCeldas = state.celdas.map((celda: Celda) => {
-  //       if (celda.estado === "disponible" && count < cantidadSacos) {
-  //         count++;
-  //         return { ...celda, estado: "ocupado", saco: sacos };
-  //       }
-  //       return celda;
+  console.log("celdas antes de cancelar");
+  console.log(celdas);
+  console.log("Lote");
+
+  console.log(lote);
+
+  // const handleAssign = () => {
+  //   if (lote) {
+  //     const cantidadSacos = Number(cantidad);
+  //     const sacosNoAsignados = sacos.filter(({ estado }) => {
+  //       return estado === "no_asigned";
   //     });
-  //     console.log("celdas asignadas");
-  //     console.log(celdas);
-  //     return { celdas: nuevasCeldas };
-  //   });
+
+  //     const sacosParaAsignar = sacosDisponibles.slice(0, cantidadSacos);
+
+  //     const celdasConAsignacion = celdas.map((celda, index) => {
+
+  //       if (celda.estado === "disponible" && sacosParaAsignar.length > 0) {
+
+  //         const primerSaco = {...sacosParaAsignar[0]};
+  //         sacosParaAsignar.shift();
+
+  //         return {
+  //           ...celda,
+  //           saco: primerSaco,
+  //           estado: "asignado" as EstadoCelda,
+  //           posicion: index + 1,
+  //         };
+  //       }
+  //       return { ...celda };
+  //     });
+
+  //     console.log(nuevasCeldas);
+  //     actualizarCeldas(nuevasCeldas);
+  //   }
   // };
+
+  const handleSave = () => {
+    if (lote) {
+      // const { sacos } = lote;
+
+      const celdasGuardadas = celdas.map((celda) => {
+        if (celda?.estado === "asignado") {
+          
+          return {
+            ...celda,
+            estado: "ocupado" as EstadoCelda,
+            saco: celda.saco,
+          };
+        }
+        return celda;
+
+      });
+      // const {sacos} : { sacos: Saco[] } = celdasGuardadas 
+      // assignSacos(lote.id, sacos )
+      actualizarCeldas(celdasGuardadas);
+    }
+  };
 
   // UI
   return (
@@ -278,7 +329,7 @@ export default function AsignBagPage() {
       {/* Footer */}
       <div className="flex justify-center gap-6 pt-4">
         <button
-          // onClick={handleSave}
+          onClick={handleSave}
           className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow transition"
         >
           Guardar

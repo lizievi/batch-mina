@@ -4,7 +4,8 @@ import { v4 as uuid } from "uuid";
 /** Tipos */
 export type Saco = {
   id: string;
-  estado: "asigned" | "no_asigned";
+  estado: string;
+  // estado: "asigned" | "no_asigned";
   nombre: string; // ej. "1001"
 };
 
@@ -16,7 +17,7 @@ export type Lote = {
 
 interface LoteStore {
   lotes: Lote[];
-  assignSacos: (loteId: string, cantidad: number) => void;
+  // assignSacos: (loteId: string, cantidad: number) => void;
   generarLotesDemo?: () => void;
 }
 
@@ -37,21 +38,13 @@ const crearLote = (inicio: number, fin: number): Lote => ({
 
 /** Store */
 export const useLoteStore = create<LoteStore>((set) => ({
-  lotes: [
-    crearLote(1001, 1010),
-    crearLote(1011, 1020),
-    crearLote(1021, 1030),
-  ],
-  assignSacos: (loteId, cantidad) =>
+  lotes: [crearLote(1001, 1010), crearLote(1011, 1020), crearLote(1021, 1030)],
+
+  assignSacos: (loteId: string, nuevosSacos: Saco[]) =>
     set((state) => ({
       lotes: state.lotes.map((lote) =>
         lote.id === loteId
-          ? {
-              ...lote,
-              sacos: lote.sacos.map((saco, index) =>
-                index < cantidad ? { ...saco, estado: "asigned" } : saco
-              ),
-            }
+          ? { ...lote, sacos: nuevosSacos } // reemplaza sacos
           : lote
       ),
     })),

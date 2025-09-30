@@ -5,7 +5,7 @@ import type { Saco } from "./LoteStore";
 export type EstadoCelda = "ocupado" | "disponible" | "asignado";
 
 export interface Celda {
-  saco: Saco;
+  saco: Saco | null;
   estado:  EstadoCelda;
   posicion: number;
   id: string;
@@ -13,7 +13,7 @@ export interface Celda {
   columna: number;
 }
 
-interface CellStore {
+type CellStore = {
   celdas: Celda[];
   setZonaCeldas: (zona: ZonaType) => void;
   actualizarEstado: (celdaId: string, nuevoEstado: EstadoCelda) => void;

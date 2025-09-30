@@ -3,6 +3,7 @@ import { v4 as uuid } from "uuid";
 import { generarCeldas } from "../lib/cellUtils"; // usamos el generador de celdas
 import type { Celda } from "./CellStore";
 
+
 export const zonaSchema = z.object({
   id: z.string(),
   nombre: z.string(),
