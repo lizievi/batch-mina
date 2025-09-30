@@ -4,20 +4,14 @@ import { useLoteStore } from "@/store/LoteStore";
 import { useNavigate } from "react-router-dom";
 export function DataTable() {
   const lotes = useLoteStore((state) => state.lotes);
-
-
   const navigate = useNavigate();
-
   const handleAssign = (loteId: string) => {
     navigate(`/asignar/${loteId}`);
   };
 
   return (
-
-
     <div className="overflow-hidden rounded-md border max-w-2xl mx-auto">
       <h1>Asignación de Sacos</h1>
-
       <table className="w-full border-collapse">
         <thead className="bg-gray-100">
           <tr>

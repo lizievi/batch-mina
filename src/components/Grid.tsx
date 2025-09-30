@@ -1,9 +1,7 @@
 import type { Celda } from "../store/CellStore";
-
 interface GridProps {
   columnas: number;
   celdas: Celda[];
-  // onCellClick?: (celdaId: string) => void;
 }
 
 export default function Grid({ columnas, celdas }: GridProps) {
@@ -15,7 +13,6 @@ export default function Grid({ columnas, celdas }: GridProps) {
       {celdas.map((celda) => (
         <button
           key={celda.id}
-          // onClick={() => onCellClick?.(celda.id)}
           className={`h-16 flex items-center justify-center border rounded ${
             celda.estado === "ocupado"
               ? "bg-red-300"
@@ -30,4 +27,3 @@ export default function Grid({ columnas, celdas }: GridProps) {
     </div>
   );
 }
-

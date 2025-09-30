@@ -17,7 +17,7 @@ export function generarCeldas(filas: number, columnas: number): Celda[] {
   return celdas;
 }
 
-// Marca las celdas ocupadas según la data externa
+// Marcar celdas ocupadas según la data externa
 export function marcarOcupadas(
   celdas: Celda[],
   ocupadas: { fila: number; columna: number }[]

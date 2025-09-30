@@ -3,9 +3,8 @@ import type { ZonaType } from "./ZoneStore";
 import type { Saco } from "./LoteStore";
 
 export type EstadoCelda = "ocupado" | "disponible" | "asignado";
-
 export interface Celda {
-  saco: Saco | null;
+  saco?: Saco | null;
   estado:  EstadoCelda;
   posicion: number;
   id: string;
@@ -23,7 +22,7 @@ type CellStore = {
 export const useCellStore = create<CellStore>((set) => ({
   celdas: [],
 
-  // Cargar las celdas de la zona seleccionada
+  // Mostrar las celdas de la zona seleccionada
   setZonaCeldas: (zona) => {
     set({ celdas: zona.celdas });
   },

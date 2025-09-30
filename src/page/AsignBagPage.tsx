@@ -4,12 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { usePatioStore } from "../store/PatioStore";
 import { useCellStore, type EstadoCelda } from "../store/CellStore";
-import { useLoteStore } from "../store/LoteStore";
-// import { useLoteStore, type Saco } from "../store/LoteStore";
+import { useLoteStore, type Saco } from "../store/LoteStore";
 
 import Grid from "../components/Grid";
 import { marcarOcupadas } from "../lib/cellUtils";
-// import type { Saco } from "../store/LoteStore";
 
 export default function AsignBagPage() {
   const { id } = useParams();
@@ -21,6 +19,7 @@ export default function AsignBagPage() {
   const { lotes } = useLoteStore();
   const { patios } = usePatioStore();
   const { celdas, setZonaCeldas, actualizarCeldas } = useCellStore();
+  const { assignSacos } = useLoteStore();
 
   // Data actual
   const lote = useMemo(() => lotes.find((item) => item.id === id), [lotes, id]);
@@ -35,30 +34,23 @@ export default function AsignBagPage() {
     [patioActual, selectedZonaId]
   );
 
-  // Calculamos celdas disponibles
   const disponibles = useMemo(
     () => celdas.filter((c) => c.estado === "disponible").length,
     [celdas]
   );
 
-  // Calculamos sacos no asignados del lote
   const sacosNoAsignados = useMemo(() => {
     if (!lote) return 0;
     const { sacos } = lote;
-    const sacosNoAsiganados = sacos.filter(
-      ({ estado }) => estado !== "asigned"
-    );
-    const counSacosNoAsignados = sacosNoAsiganados.length;
+    const sacosNoAsignados = sacos.filter(({ estado }) => estado !== "asigned");
+    const counSacosNoAsignados = sacosNoAsignados.length;
     return counSacosNoAsignados;
   }, [lote]);
 
-  // Max = menor entre disponibles y sacos no asignados
   const maxCantidad = Math.min(disponibles, sacosNoAsignados);
 
-  // Side effects
   useEffect(() => {
     if (zonaActual) {
-      // cargar celdas de la zona
       setZonaCeldas(zonaActual);
 
       // marcar ocupadas
@@ -77,9 +69,6 @@ export default function AsignBagPage() {
     setSelectedPatioId("");
     setSelectedZonaId("");
   };
-
-  //"ocupado" | "disponible" | "asignado"
-
   const handleAssign = () => {
     if (lote) {
       const cantidadSacos = Number(cantidad);
@@ -128,16 +117,12 @@ export default function AsignBagPage() {
 
   const handleCancel = () => {
     if (lote) {
-      // const { sacos } = lote;
-      
-      // console.log(sacos);
       const celdasCanceladas = celdas.map((celda) => {
         if (celda.estado === "asignado") {
           return {
             ...celda,
             estado: "disponible" as EstadoCelda,
-            // saco: { ...sacos[index], estado: "no_asigned" }
-            saco: {},
+            saco: {} as Saco,
           };
         }
         return celda;
@@ -146,64 +131,44 @@ export default function AsignBagPage() {
     }
   };
 
-  console.log("celdas antes de cancelar");
-  console.log(celdas);
-  console.log("Lote");
-
-  console.log(lote);
-
-  // const handleAssign = () => {
-  //   if (lote) {
-  //     const cantidadSacos = Number(cantidad);
-  //     const sacosNoAsignados = sacos.filter(({ estado }) => {
-  //       return estado === "no_asigned";
-  //     });
-
-  //     const sacosParaAsignar = sacosDisponibles.slice(0, cantidadSacos);
-
-  //     const celdasConAsignacion = celdas.map((celda, index) => {
-
-  //       if (celda.estado === "disponible" && sacosParaAsignar.length > 0) {
-
-  //         const primerSaco = {...sacosParaAsignar[0]};
-  //         sacosParaAsignar.shift();
-
-  //         return {
-  //           ...celda,
-  //           saco: primerSaco,
-  //           estado: "asignado" as EstadoCelda,
-  //           posicion: index + 1,
-  //         };
-  //       }
-  //       return { ...celda };
-  //     });
-
-  //     console.log(nuevasCeldas);
-  //     actualizarCeldas(nuevasCeldas);
-  //   }
-  // };
-
   const handleSave = () => {
     if (lote) {
-      // const { sacos } = lote;
-
-      const celdasGuardadas = celdas.map((celda) => {
+      const celdasConSacosAGuardar = celdas.filter((celda) => {
+        return celda?.estado === "asignado";
+      });
+      const celdasConGuardadas = celdas.map((celda) => {
         if (celda?.estado === "asignado") {
-          
           return {
             ...celda,
             estado: "ocupado" as EstadoCelda,
-            saco: celda.saco,
+            saco: { ...celda.saco },
           };
         }
         return celda;
-
       });
-      // const {sacos} : { sacos: Saco[] } = celdasGuardadas 
-      // assignSacos(lote.id, sacos )
-      actualizarCeldas(celdasGuardadas);
+
+      // const celdasConSacosAGuardar = celdasConGuardadas.filter((celda) => {
+      //   return celda.saco?.estado === "asigned";
+      // });
+      const sacosAGuardar: Saco[] = celdasConSacosAGuardar
+        .map((celda) => celda?.saco)
+        .filter((saco): saco is Saco => saco !== undefined && saco !== null);
+
+      assignSacos(lote.id, sacosAGuardar);
+      actualizarCeldas(celdasConGuardadas);
     }
   };
+  // const { sacos } = lote;
+  console.log("Lote");
+
+  console.log(lote);
+  console.log("Sacos");
+
+  console.log(lote?.sacos);
+
+  // console.log(sacos);
+  console.log("estado de las celdas");
+  console.log(celdas);
 
   // UI
   return (
