@@ -3,8 +3,8 @@ import { v4 as uuid } from "uuid";
 
 export type Saco = {
   id: string;
-  estado: string | undefined;
-  nombre: string | undefined;
+  estado: string ;
+  nombre: string ;
 };
 
 export type Lote = {

@@ -5,6 +5,7 @@ interface GridProps {
 }
 
 export default function Grid({ columnas, celdas }: GridProps) {
+  
   return (
     <div
       className="grid gap-2"
@@ -21,7 +22,7 @@ export default function Grid({ columnas, celdas }: GridProps) {
               : "bg-green-200"
           }`}
         >
-          {celda.fila}x{celda.columna}
+          {/* {celda.fila}x{celda.columna} */}{celda.saco?.nombre}
         </button>
       ))}
     </div>

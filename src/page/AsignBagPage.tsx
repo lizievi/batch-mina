@@ -7,7 +7,7 @@ import { useCellStore, type EstadoCelda } from "../store/CellStore";
 import { useLoteStore, type Saco } from "../store/LoteStore";
 
 import Grid from "../components/Grid";
-import { marcarOcupadas } from "../lib/cellUtils";
+// import { marcarOcupadas } from "../lib/cellUtils";
 
 export default function AsignBagPage() {
   const { id } = useParams();
@@ -54,12 +54,12 @@ export default function AsignBagPage() {
       setZonaCeldas(zonaActual);
 
       // marcar ocupadas
-      useCellStore.setState((state) => ({
-        celdas: marcarOcupadas(state.celdas, [
-          { fila: 1, columna: 1 },
-          { fila: 2, columna: 2 },
-        ]),
-      }));
+      // useCellStore.setState((state) => ({
+      //   celdas: marcarOcupadas(state.celdas, [
+      //     { fila: 1, columna: 1 },
+      //     { fila: 2, columna: 2 },
+      //   ]),
+      // }));
     }
   }, [zonaActual, setZonaCeldas]);
 
@@ -78,40 +78,45 @@ export default function AsignBagPage() {
       });
 
       const sacosParaAsignar = sacosNoAsignados.slice(0, cantidadSacos);
-      const celdasDisponibles = celdas.filter(({ estado }) => {
-        return estado === "disponible";
-      });
-      const celdasAsignadas = celdasDisponibles.map((celda, index) => {
-        if (index < cantidadSacos) {
+      // const celdasDisponibles = celdas.filter(({ estado }) => {
+      //   return estado === "disponible";
+      // });
+      const celdasAsignadas = celdas.map((celda) => {
+        if (celda.estado !== "disponible") return celda;
+        const primerSaco = sacosParaAsignar.shift();
+        if (primerSaco) {
           return {
             ...celda,
-            estado: "asignado",
-            saco: { ...sacosParaAsignar[index], estado: "asigned" },
+            estado: "asignado" as EstadoCelda,
+            saco: { ...primerSaco, estado: "asignado" },
           };
         }
-        return {
-          ...celda,
-        };
+        return celda;
       });
-      let i = 0;
-      const totalCeldasNuevas = celdas.map((celda) => {
-        const objetoceldasAsignadas = { ...celdasAsignadas[i] };
-        const { estado, saco } = objetoceldasAsignadas;
-        const { id: idArrCelAsignadas } = objetoceldasAsignadas;
-        if (idArrCelAsignadas === celda.id) {
-          i++;
-          return {
-            ...celda,
-            estado: estado as EstadoCelda,
-            saco: saco,
-          };
-        }
-        return {
-          ...celda,
-        };
-      });
-      actualizarCeldas(totalCeldasNuevas);
+      actualizarCeldas(celdasAsignadas);
       setCantidad("");
+
+      // let i = 0;
+      // const totalCeldasNuevas = celdas.map((celda) => {
+      //   const objetoceldasAsignadas = { ...celdasAsignadas[i] };
+      //   const { estado, saco } = objetoceldasAsignadas;
+      //   const { id: idArrCelAsignadas } = objetoceldasAsignadas;
+      //   if (idArrCelAsignadas === celda.id) {
+      //     i++;
+      //     return {
+      //       ...celda,
+      //       estado: estado as EstadoCelda,
+      //       saco: saco,
+      //     };
+      //   }
+      //   return {
+      //     ...celda,
+      //   };
+      // });
+      // console.log('totalCeldasNuevas')
+      // console.log(totalCeldasNuevas)
+      // actualizarCeldas(totalCeldasNuevas);
+      // setCantidad("");
     }
   };
 
@@ -137,7 +142,7 @@ export default function AsignBagPage() {
         return celda?.estado === "asignado";
       });
       const celdasConGuardadas = celdas.map((celda) => {
-        if (celda?.estado === "asignado") {
+        if (celda?.estado === "asignado" && celda.saco) {
           return {
             ...celda,
             estado: "ocupado" as EstadoCelda,
@@ -147,9 +152,6 @@ export default function AsignBagPage() {
         return celda;
       });
 
-      // const celdasConSacosAGuardar = celdasConGuardadas.filter((celda) => {
-      //   return celda.saco?.estado === "asigned";
-      // });
       const sacosAGuardar: Saco[] = celdasConSacosAGuardar
         .map((celda) => celda?.saco)
         .filter((saco): saco is Saco => saco !== undefined && saco !== null);
