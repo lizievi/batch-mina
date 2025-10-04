@@ -16,7 +16,7 @@ export default function AsignBagPage() {
   const [selectedZonaId, setSelectedZonaId] = useState("");
 
   // Stores
-  const { lotes } = useLoteStore();
+  const { lotes, updateSacosByIdLote } = useLoteStore();
   const { patios } = usePatioStore();
   const { celdas, setZonaCeldas, actualizarCeldas } = useCellStore();
   // const { assignSacos } = useLoteStore();
@@ -77,7 +77,7 @@ export default function AsignBagPage() {
     }
   };
 
-  const handleAssign = () => {
+  const useHandleAssign = () => {
     if (lote) {
       const cantidadSacos = Number(cantidad);
       const { sacos } = lote;
@@ -86,8 +86,12 @@ export default function AsignBagPage() {
       });
 
       const sacosParaAsignar = sacosNoAsignados.slice(0, cantidadSacos);
+
       const celdasAsignadas = celdas.map((celda) => {
-        if (celda.estado !== "disponible") return celda;
+        if (celda.estado !== "disponible") {
+          return celda;
+        }
+
         const primerSaco = sacosParaAsignar.shift();
         if (primerSaco) {
           return {
@@ -98,7 +102,22 @@ export default function AsignBagPage() {
         }
         return celda;
       });
+
+      // si hay celdas asignadas, extraer sacos asignados de celda para restarle a sacos no asignados
+      const celdasConSacos = celdasAsignadas.filter(
+        ({ saco }) => saco?.estado == "asignado"
+      );
+
+      const sacosAsignados = celdasConSacos.map((celda) => celda.saco);
+
+      const sacosActualizados = sacos.map((sacoStore) => {
+        const sacoObtenidoParaActualizar = sacosAsignados.find((saco) => {
+          return saco?.id === sacoStore.id;
+        });
+        return sacoObtenidoParaActualizar || sacoStore;
+      });
       actualizarCeldas(celdasAsignadas);
+      updateSacosByIdLote(lote.id, sacosActualizados);
       setCantidad("");
     }
   };
@@ -127,41 +146,9 @@ export default function AsignBagPage() {
         }
         return celda;
       });
-      // const celdasConSacosAGuardar = celdas.filter((celda) => {
-      //   return celda?.estado === "asignado";
-      // });
-      // const celdasConGuardadas = celdas.map((celda) => {
-      //   if (celda?.estado === "asignado" && celda.saco) {
-      //     return {
-      //       ...celda,
-      //       estado: "ocupado" as EstadoCelda,
-      //       saco: { ...celda.saco },
-      //     };
-      //   }
-      //   return celda;
-      // });
-
-      // const sacosAGuardar: Saco[] = celdasConSacosAGuardar
-      //   .map((celda) => celda?.saco)
-      //   .filter((saco): saco is Saco => saco !== undefined && saco !== null);
-
-      // assignSacos(lote.id, celdasAGuardar);
       actualizarCeldas(celdasAGuardar);
     }
   };
-
-
-  // const { sacos } = lote;
-  console.log("Lote");
-
-  console.log(lote);
-  console.log("Sacos");
-
-  console.log(lote?.sacos);
-
-  // console.log(sacos);
-  console.log("estado de las celdas");
-  console.log(celdas);
 
   // UI
   return (
@@ -261,7 +248,7 @@ export default function AsignBagPage() {
         {/* Botones acciones rápidas */}
         <div className="flex gap-2">
           <button
-            onClick={handleAssign}
+            onClick={useHandleAssign}
             className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition"
           >
             Asignar

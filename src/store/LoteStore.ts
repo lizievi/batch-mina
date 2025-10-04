@@ -15,7 +15,7 @@ export type Lote = {
 interface LoteStore {
   lotes: Lote[];
   generarLotesDemo?: () => void;
-  assignSacos: (loteId: string, nuevosSacos: Saco[]) => void;
+  updateSacosByIdLote: (loteId: string, nuevosSacos: Saco[]) => void;
 }
 
 // Generar sacos según rango
@@ -35,21 +35,18 @@ const crearLote = (inicio: number, fin: number): Lote => ({
 
 // Store
 export const useLoteStore = create<LoteStore>((set) => ({
+
   lotes: [crearLote(1001, 1010), crearLote(1011, 1020), crearLote(1021, 1030)],
 
-  assignSacos: (loteId: string, nuevosSacos: Saco[]) =>
+  updateSacosByIdLote: (loteId: string, updateSacos: Saco[]) =>
     set((state) => ({
-      lotes: state.lotes.map((lote) =>
-        lote.id === loteId
-          ? {
-              ...lote,
-              sacos: lote.sacos.map((sacoExistente, index) =>
-                nuevosSacos[index] !== undefined
-                  ? nuevosSacos[index]
-                  : sacoExistente
-              ),
-            }
-          : lote
-      ),
+      lotes: state.lotes.map((lote) => {
+        if(lote.id === loteId){
+          return {...lote, sacos: updateSacos }
+        }
+        return lote
+      })      
     })),
 }));
+
+
