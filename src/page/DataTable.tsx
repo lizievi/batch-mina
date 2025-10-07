@@ -22,14 +22,14 @@ export function DataTable() {
         </thead>
         <tbody>
           {lotes.map((lote) => {
-            const disponibles = lote.sacos.filter(
+            const sacosDisponibles = lote.sacos.filter(
               (s) => s.estado === "no_asigned"
             ).length;
 
             return (
               <tr key={lote.id}>
                 <td className="border px-4 py-2">{lote.nombre}</td>
-                <td className="border px-4 py-2">{disponibles}</td>
+                <td className="border px-4 py-2">{sacosDisponibles}</td>
                 <td className="border px-4 py-2 flex gap-2 items-center">
                   <button
                     onClick={() => handleAssign(lote.id)}

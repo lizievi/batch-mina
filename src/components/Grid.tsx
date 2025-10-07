@@ -2,6 +2,7 @@ import { useLoteStore } from "@/store/LoteStore";
 import { useCellStore, type Celda, type EstadoCelda } from "../store/CellStore";
 import { useMemo } from "react";
 import { useParams } from "react-router-dom";
+import { MdDeleteForever } from "react-icons/md";
 
 interface GridProps {
   columnas: number;
@@ -17,17 +18,17 @@ export default function Grid({ columnas, celdas }: GridProps) {
   const { actualizarCeldas } = useCellStore();
 
   const handleDelete = (idCelda: string) => {
-    let idSaco = null;
+    
+    let idSaco = '';
     const celdasRestauradas = celdas.map((celda) => {
       if (celda.id === idCelda) {
-        idSaco = celda.saco?.id;
-        console.log("idSaco", idSaco);
+        idSaco = celda.saco?.id || ''; 
         if (lote) {
           const { sacos } = lote;
           const sacosActualizados = sacos.map((sacoStore) => {
             if(sacoStore.id === idSaco){
               
-              return {...celda.saco, estado: 'no_asigned'}
+              return {...celda.saco!, estado: 'no_asigned'}
             }
             return sacoStore;
           });
@@ -42,6 +43,8 @@ export default function Grid({ columnas, celdas }: GridProps) {
 
     actualizarCeldas(celdasRestauradas);
   };
+
+  console.log('celdas', celdas)
   return (
     <div
       className="grid gap-2"
@@ -50,7 +53,7 @@ export default function Grid({ columnas, celdas }: GridProps) {
       {celdas.map((celda) => (
         <div
           key={celda.id}
-          className={`h-16 flex items-center justify-center border rounded ${
+          className={`h-16 flex items-center justify-center border rounded relative ${
             celda.estado === "ocupado"
               ? "bg-red-300"
               : celda.estado === "asignado"
@@ -58,13 +61,13 @@ export default function Grid({ columnas, celdas }: GridProps) {
               : "bg-green-200"
           }`}
         >
-          {celda.saco?.nombre}
+          <div>{celda.saco?.nombre}</div>
           {celda.estado === "ocupado" && (
             <button
               onClick={() => handleDelete(celda.id)}
-              className="border border-gray-500 rounded"
+              className="border border-gray-500 rounded p-1 absolute right-3 top-3"
             >
-              e
+              <MdDeleteForever />
             </button>
           )}
         </div>

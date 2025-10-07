@@ -5,6 +5,7 @@ import { useParams } from "react-router-dom";
 import { usePatioStore } from "../store/PatioStore";
 import { useCellStore, type EstadoCelda } from "../store/CellStore";
 import { useLoteStore, type Saco } from "../store/LoteStore";
+import { useNavigate } from "react-router-dom";
 
 import Grid from "../components/Grid";
 // import { marcarOcupadas } from "../lib/cellUtils";
@@ -19,6 +20,8 @@ export default function AsignBagPage() {
   const { lotes, updateSacosByIdLote } = useLoteStore();
   const { patios } = usePatioStore();
   const { celdas, setZonaCeldas, actualizarCeldas } = useCellStore();
+
+  const navigate = useNavigate();
   // const { assignSacos } = useLoteStore();
 
   // Data actual
@@ -34,46 +37,45 @@ export default function AsignBagPage() {
     [patioActual, selectedZonaId]
   );
 
-  const disponibles = useMemo(
-    () => celdas.filter((c) => c.estado === "disponible").length,
-    [celdas]
-  );
+  const celdasDisponibles = celdas.filter((c) => c.estado === "disponible").length
 
-  const sacosNoAsignados = useMemo(() => {
-    if (!lote) return 0;
-    const { sacos } = lote;
-    const sacosNoAsignados = sacos.filter(({ estado }) => estado !== "asigned");
-    const counSacosNoAsignados = sacosNoAsignados.length;
-    return counSacosNoAsignados;
-  }, [lote]);
 
-  const maxCantidad = Math.min(disponibles, sacosNoAsignados);
+   
+  const cantidadSacosDisponibles = lote?.sacos.filter(
+    (s) => s.estado === "no_asigned"
+  ).length || 0;
 
-  useEffect(() => {
-    if (zonaActual) {
-      setZonaCeldas(zonaActual);
-
-      // marcar ocupadas
-      // useCellStore.setState((state) => ({
-      //   celdas: marcarOcupadas(state.celdas, [
-      //     { fila: 1, columna: 1 },
-      //     { fila: 2, columna: 2 },
-      //   ]),
-      // }));
-    }
-  }, [zonaActual, setZonaCeldas]);
+  const maxCantidad = Math.min(celdasDisponibles, cantidadSacosDisponibles);
 
   // Handlers
   const handleClear = () => {
     setCantidad("");
     if (lote) {
+      const { sacos } = lote;
       const celdasRestauradas = celdas.map((celda) => {
         if (celda.estado === "asignado") {
           return { ...celda, estado: "disponible" as EstadoCelda, saco: null };
         }
         return celda;
       });
+
+      const celdasAsignadas = celdas.filter(
+        (celda) => celda.estado === "asignado"
+      );
+
+      const sacosAsignados = celdasAsignadas.map((celda) => celda.saco);
+
+      const sacosActualizados = sacos.map((sacoStore) => {
+        const sacoObtenidoParaActualizar = sacosAsignados.find((saco) => {
+          return saco?.id === sacoStore.id;
+        });
+        if (sacoObtenidoParaActualizar) {
+          return { ...sacoObtenidoParaActualizar, estado: "no_asigned" };
+        } return sacoStore
+      });
+
       actualizarCeldas(celdasRestauradas);
+      updateSacosByIdLote(lote.id, sacosActualizados);
     }
   };
 
@@ -81,10 +83,10 @@ export default function AsignBagPage() {
     if (lote) {
       const cantidadSacos = Number(cantidad);
       const { sacos } = lote;
+      console.log("cantidad", cantidad);
       const sacosNoAsignados = sacos.filter(({ estado }) => {
         return estado === "no_asigned";
       });
-
       const sacosParaAsignar = sacosNoAsignados.slice(0, cantidadSacos);
 
       const celdasAsignadas = celdas.map((celda) => {
@@ -103,7 +105,6 @@ export default function AsignBagPage() {
         return celda;
       });
 
-      // si hay celdas asignadas, extraer sacos asignados de celda para restarle a sacos no asignados
       const celdasConSacos = celdasAsignadas.filter(
         ({ saco }) => saco?.estado == "asignado"
       );
@@ -116,6 +117,7 @@ export default function AsignBagPage() {
         });
         return sacoObtenidoParaActualizar || sacoStore;
       });
+      ///////////////////////////////////////////////////
       actualizarCeldas(celdasAsignadas);
       updateSacosByIdLote(lote.id, sacosActualizados);
       setCantidad("");
@@ -123,19 +125,8 @@ export default function AsignBagPage() {
   };
 
   const handleCancel = () => {
-    if (lote) {
-      const celdasCanceladas = celdas.map((celda) => {
-        if (celda.estado === "asignado") {
-          return {
-            ...celda,
-            estado: "disponible" as EstadoCelda,
-            saco: {} as Saco,
-          };
-        }
-        return celda;
-      });
-      actualizarCeldas(celdasCanceladas);
-    }
+    handleClear();
+    navigate(`/`);
   };
 
   const handleSave = () => {
@@ -146,9 +137,22 @@ export default function AsignBagPage() {
         }
         return celda;
       });
+
       actualizarCeldas(celdasAGuardar);
     }
   };
+
+  useEffect(() => {
+    if (zonaActual) {
+      setZonaCeldas(zonaActual);
+    }
+  }, [zonaActual, setZonaCeldas]);
+
+  useEffect(() => {
+    if (!lote) {
+      navigate(`/`);
+    }
+  }, [lote, navigate]);
 
   // UI
   return (
@@ -236,9 +240,10 @@ export default function AsignBagPage() {
             placeholder="Ej: 5"
             className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
           />
+
           <p className="text-sm text-gray-600 mt-2">
-            Celdas Disponibles: {disponibles} | Sacos no asignados:{" "}
-            {sacosNoAsignados} |{" "}
+            Celdas Disponibles: {celdasDisponibles} <br />
+            Sacos no asignados: {cantidadSacosDisponibles} <br />
             <span className="text-red-600">
               Cantidad máx permitido: {maxCantidad}
             </span>
