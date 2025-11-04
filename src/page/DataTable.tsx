@@ -10,8 +10,8 @@ export function DataTable() {
   };
 
   return (
-    <div className="overflow-hidden rounded-md border max-w-2xl mx-auto">
-      <h1>Asignación de Sacos</h1>
+    <div className="overflow-hidden rounded-md border max-w-2xl mx-auto my-10">
+      <h1 className="text-center p-4">Asignación de Sacos</h1>
       <table className="w-full border-collapse">
         <thead className="bg-gray-100">
           <tr>

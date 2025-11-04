@@ -4,11 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { usePatioStore } from "../store/PatioStore";
 import { useCellStore, type EstadoCelda } from "../store/CellStore";
-import { useLoteStore, type Saco } from "../store/LoteStore";
+import { useLoteStore } from "../store/LoteStore";
 import { useNavigate } from "react-router-dom";
 
 import Grid from "../components/Grid";
-// import { marcarOcupadas } from "../lib/cellUtils";
 
 export default function AsignBagPage() {
   const { id } = useParams();
@@ -16,15 +15,12 @@ export default function AsignBagPage() {
   const [selectedPatioId, setSelectedPatioId] = useState("");
   const [selectedZonaId, setSelectedZonaId] = useState("");
 
-  // Stores
   const { lotes, updateSacosByIdLote } = useLoteStore();
   const { patios } = usePatioStore();
   const { celdas, setZonaCeldas, actualizarCeldas } = useCellStore();
 
   const navigate = useNavigate();
-  // const { assignSacos } = useLoteStore();
 
-  // Data actual
   const lote = useMemo(() => lotes.find((item) => item.id === id), [lotes, id]);
 
   const patioActual = useMemo(
@@ -37,17 +33,15 @@ export default function AsignBagPage() {
     [patioActual, selectedZonaId]
   );
 
-  const celdasDisponibles = celdas.filter((c) => c.estado === "disponible").length
+  const celdasDisponibles = celdas.filter(
+    (c) => c.estado === "disponible"
+  ).length;
 
-
-   
-  const cantidadSacosDisponibles = lote?.sacos.filter(
-    (s) => s.estado === "no_asigned"
-  ).length || 0;
+  const cantidadSacosDisponibles =
+    lote?.sacos.filter((s) => s.estado === "no_asigned").length || 0;
 
   const maxCantidad = Math.min(celdasDisponibles, cantidadSacosDisponibles);
 
-  // Handlers
   const handleClear = () => {
     setCantidad("");
     if (lote) {
@@ -71,7 +65,8 @@ export default function AsignBagPage() {
         });
         if (sacoObtenidoParaActualizar) {
           return { ...sacoObtenidoParaActualizar, estado: "no_asigned" };
-        } return sacoStore
+        }
+        return sacoStore;
       });
 
       actualizarCeldas(celdasRestauradas);
@@ -117,7 +112,6 @@ export default function AsignBagPage() {
         });
         return sacoObtenidoParaActualizar || sacoStore;
       });
-      ///////////////////////////////////////////////////
       actualizarCeldas(celdasAsignadas);
       updateSacosByIdLote(lote.id, sacosActualizados);
       setCantidad("");
@@ -154,10 +148,8 @@ export default function AsignBagPage() {
     }
   }, [lote, navigate]);
 
-  // UI
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-6">
-      {/* Encabezado */}
+    <div className="max-w-5xl mx-auto p-6 space-y-6 my-10">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <h3 className="text-lg font-semibold text-gray-800">
           Lote:{" "}
@@ -176,9 +168,7 @@ export default function AsignBagPage() {
         </span>
       </div>
 
-      {/* Filtros y controles */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
-        {/* Selector Patio */}
         <div>
           <label className="block mb-1 text-sm font-medium text-gray-700">
             Selecciona un Patio
@@ -187,7 +177,7 @@ export default function AsignBagPage() {
             value={selectedPatioId}
             onChange={(e) => {
               setSelectedPatioId(e.target.value);
-              setSelectedZonaId(""); // reset zona al cambiar patio
+              setSelectedZonaId("");
             }}
             className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
           >
@@ -200,7 +190,6 @@ export default function AsignBagPage() {
           </select>
         </div>
 
-        {/* Selector Zona */}
         <div>
           <label className="block mb-1 text-sm font-medium text-gray-700">
             Selecciona una Zona
@@ -268,7 +257,6 @@ export default function AsignBagPage() {
         </div>
       </div>
 
-      {/* Grid */}
       <div className="mt-6 border rounded-lg p-4 bg-white shadow">
         <h4 className="text-sm font-medium text-gray-700 mb-3">
           Distribución de sacos
@@ -276,7 +264,6 @@ export default function AsignBagPage() {
         {zonaActual && <Grid columnas={zonaActual.columnas} celdas={celdas} />}
       </div>
 
-      {/* Footer */}
       <div className="flex justify-center gap-6 pt-4">
         <button
           onClick={handleSave}
