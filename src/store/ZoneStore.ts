@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { v4 as uuid } from "uuid";
-import { generarCeldas } from "../lib/cellUtils"; // usamos el generador de celdas
+import { generarCeldas } from "../lib/cellUtils"; 
 import type { Celda } from "./CellStore";
 
 
@@ -9,12 +9,11 @@ export const zonaSchema = z.object({
   nombre: z.string(),
   filas: z.number(),
   columnas: z.number(),
-  celdas: z.array(z.any()), // añadimos celdas
+  celdas: z.array(z.any()),
 });
 
 export type ZonaType = z.infer<typeof zonaSchema>;
 
-/** Helper para crear zonas con sus celdas */
 const crearZona = (nombre: string, filas: number, columnas: number): ZonaType => ({
   id: uuid(),
   nombre,

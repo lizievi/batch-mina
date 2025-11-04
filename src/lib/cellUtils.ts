@@ -10,8 +10,11 @@ export function generarCeldas(filas: number, columnas: number): Celda[] {
         id: `celda-${idCounter++}`,
         fila: f,
         columna: c,
+        posicion: idCounter,
         estado: "disponible",
+        saco: null,
       });
+      idCounter++;
     }
   }
   return celdas;
