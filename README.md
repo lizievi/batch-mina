@@ -1,5 +1,5 @@
 🏗️ Proyecto batch-mina (Antamina Batch)
-URL: https://batch-mina-2.vercel.app/
+App deployed en Vercel: https://batch-mina-2.vercel.app/
 
 Aplicación web desarrollada en React + TypeScript + Vite, que permite gestionar, visualizar y asignar sacos (bags) a celdas dentro de patios y zonas.
 El objetivo principal del sistema es facilitar la asignación y distribución visual de lotes de sacos dentro de un modelo estructurado de patios y celdas, como parte de un flujo de operaciones mineras o logísticas.
@@ -21,6 +21,8 @@ El objetivo principal del sistema es facilitar la asignación y distribución vi
 🧰 Vite como bundler ultrarrápido para desarrollo y build.
 
 🏗️ Arquitectura del Proyecto
+
+```text
 src/
 │
 ├── components/
@@ -51,6 +53,8 @@ src/
 │
 ├── App.tsx                     # Configuración de rutas principales
 └── main.tsx                    # Entrada de la aplicación
+
+```
 
 ⚙️ Instalación y ejecución
 🔧 Requisitos previos
